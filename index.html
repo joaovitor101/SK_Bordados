@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SK Bordados - Gerenciamento de Pedidos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>SK Bordados</h1>
+      <nav>
+        <button class="nav-btn active" data-page="pedidos">Lista de Pedidos</button>
+        <button class="nav-btn" data-page="novo-pedido">Novo Pedido</button>
+        <button class="nav-btn" data-page="clientes">Clientes</button>
+      </nav>
+    </header>
+
+    <!-- Página: Lista de Pedidos -->
+    <div id="pedidos-page" class="page active">
+      <h2>Lista de Pedidos</h2>
+      <div class="filters">
+        <input type="text" id="search-pedidos" placeholder="Buscar pedidos...">
+      </div>
+      <div class="table-container">
+        <table id="pedidos-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Empresa</th>
+              <th>Descrição</th>
+              <th>Cor</th>
+              <th>Tecido</th>
+              <th>Tamanho</th>
+              <th>Observação</th>
+              <th>Cortado</th>
+              <th>Silkado</th>
+              <th>Bordado</th>
+              <th>Entregue</th>
+              <th>Data Entrega</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="pedidos-tbody">
+            <!-- Pedidos serão inseridos aqui -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Página: Novo Pedido -->
+    <div id="novo-pedido-page" class="page">
+      <h2>Novo Pedido</h2>
+      <form id="pedido-form">
+        <div class="form-group">
+          <label for="cliente-select">Cliente *</label>
+          <select id="cliente-select" required>
+            <option value="">Selecione um cliente</option>
+          </select>
+          <button type="button" id="btn-novo-cliente" class="btn-secondary">+ Novo Cliente</button>
+        </div>
+
+        <div class="form-group">
+          <label for="descricao">Descrição da Peça *</label>
+          <input type="text" id="descricao" required placeholder="Ex: Camiseta">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cor">Cor</label>
+            <input type="text" id="cor" placeholder="Ex: Azul">
+          </div>
+
+          <div class="form-group">
+            <label for="tecido">Tecido</label>
+            <input type="text" id="tecido" placeholder="Ex: Algodão">
+          </div>
+
+          <div class="form-group">
+            <label for="tamanho">Tamanho</label>
+            <input type="text" id="tamanho" placeholder="Ex: G">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="observacao">Observação</label>
+          <textarea id="observacao" rows="3" placeholder="Observações adicionais..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Salvar Pedido</button>
+          <button type="button" class="btn-secondary" id="btn-cancelar-pedido">Cancelar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Página: Clientes -->
+    <div id="clientes-page" class="page">
+      <h2>Gerenciar Clientes</h2>
+      <button class="btn-primary" id="btn-adicionar-cliente">+ Adicionar Cliente</button>
+      
+      <div class="table-container">
+        <table id="clientes-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Empresa</th>
+              <th>Telefone</th>
+              <th>Email</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="clientes-tbody">
+            <!-- Clientes serão inseridos aqui -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Novo/Editar Cliente -->
+  <div id="cliente-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="modal-title">Novo Cliente</h2>
+      <form id="cliente-form">
+        <input type="hidden" id="cliente-id">
+        
+        <div class="form-group">
+          <label for="cliente-nome">Nome *</label>
+          <input type="text" id="cliente-nome" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cliente-empresa">Empresa</label>
+          <input type="text" id="cliente-empresa">
+        </div>
+
+        <div class="form-group">
+          <label for="cliente-telefone">Telefone</label>
+          <input type="text" id="cliente-telefone">
+        </div>
+
+        <div class="form-group">
+          <label for="cliente-email">Email</label>
+          <input type="email" id="cliente-email">
+        </div>
+
+        <div class="form-group">
+          <label for="cliente-endereco">Endereço</label>
+          <textarea id="cliente-endereco" rows="2"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Salvar</button>
+          <button type="button" class="btn-secondary" id="btn-cancelar-cliente">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar Status do Pedido -->
+  <div id="status-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Editar Status do Pedido</h2>
+      <form id="status-form">
+        <input type="hidden" id="pedido-id-status">
+        
+        <div class="status-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="status-cortado">
+            <span>Cortado</span>
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="status-silkado">
+            <span>Silkado</span>
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="status-bordado">
+            <span>Bordado</span>
+          </label>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="status-entregue">
+            <span>Entregue</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="status-data-entrega">Data de Entrega</label>
+          <input type="date" id="status-data-entrega">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Salvar</button>
+          <button type="button" class="btn-secondary" id="btn-cancelar-status">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules/
+bordados.db
+bordados.db-journal
+*.log
+.DS_Store
+dist/
+build/
+.env
