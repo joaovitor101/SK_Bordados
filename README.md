@@ -49,54 +49,29 @@ npm run dev
 
 ## Deploy na Vercel
 
-### Opção 1: Via GitHub (Recomendado)
+📖 **Guia completo e detalhado**: Veja o arquivo [DEPLOY.md](./DEPLOY.md) para instruções passo a passo.
 
-1. Crie um repositório no GitHub e faça push do código:
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/seu-usuario/sk-bordados.git
-git push -u origin main
-```
+### Resumo Rápido
 
-2. Acesse [Vercel](https://vercel.com) e faça login com GitHub
+1. **Prepare o MongoDB Atlas**:
+   - Crie um cluster gratuito
+   - Configure usuário e senha
+   - Adicione IP `0.0.0.0/0` na whitelist
+   - Copie a connection string
 
-3. Clique em "New Project"
+2. **Deploy na Vercel**:
+   - Acesse [vercel.com](https://vercel.com) e faça login
+   - Clique em "Add New Project"
+   - Conecte seu repositório GitHub ou faça upload
+   - Configure as variáveis de ambiente:
+     - `MONGODB_URI`: sua string de conexão
+     - `ADMIN_PASSWORD`: senha de acesso ao sistema
+     - `SESSION_SECRET`: chave secreta aleatória
+   - Clique em "Deploy"
 
-4. Importe seu repositório
+3. **Pronto!** Sua aplicação estará online em alguns minutos.
 
-5. Configure as variáveis de ambiente:
-   - Em "Environment Variables", adicione:
-   - Name: `MONGODB_URI`, Value: sua string de conexão do MongoDB Atlas
-   - Name: `ADMIN_PASSWORD`, Value: senha de acesso ao sistema (escolha uma senha forte!)
-   - Name: `SESSION_SECRET`, Value: chave secreta aleatória (gere com: `openssl rand -base64 32`)
-
-6. Clique em "Deploy"
-
-7. Pronto! Sua aplicação estará online
-
-### Opção 2: Via CLI da Vercel
-
-1. Instale a CLI da Vercel:
-```bash
-npm i -g vercel
-```
-
-2. Faça login:
-```bash
-vercel login
-```
-
-3. Configure a variável de ambiente:
-```bash
-vercel env add MONGODB_URI
-```
-
-4. Faça o deploy:
-```bash
-vercel
-```
+Para mais detalhes, consulte [DEPLOY.md](./DEPLOY.md).
 
 ## Estrutura do Projeto
 
