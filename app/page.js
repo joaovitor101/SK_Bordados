@@ -85,7 +85,7 @@ export default function Home() {
       }
     };
 
-    const intervalId = window.setInterval(tick, 2000);
+    const intervalId = window.setInterval(tick, 4000);
     return () => window.clearInterval(intervalId);
   }, [activePage, showClienteModal, showStatusModal]);
 
