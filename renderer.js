@@ -78,7 +78,7 @@ function renderClientes() {
       <td>${cliente.telefone || '-'}</td>
       <td>${cliente.email || '-'}</td>
       <td>
-        <button class="btn-edit" onclick="editCliente(${cliente.id})">Editar</button>
+        <button class="btn-edit" onclick="editCliente('${cliente.id}')">Editar</button>
       </td>
     `;
     tbody.appendChild(tr);

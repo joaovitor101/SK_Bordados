@@ -95,13 +95,25 @@ function registerIpcHandlers() {
 
     const pedidos = await Pedido.find()
       .populate('cliente_id', 'nome empresa')
+      .sort({ createdAt: -1 })
       .lean();
 
     return pedidos.map(p => ({
       id: p._id.toString(),
+      cliente_id: p.cliente_id?._id?.toString() || '',
       cliente_nome: p.cliente_id?.nome || '',
       cliente_empresa: p.cliente_id?.empresa || '',
-      ...p
+      descricao: p.descricao,
+      cor: p.cor || null,
+      tecido: p.tecido || null,
+      tamanho: p.tamanho || null,
+      observacao: p.observacao || null,
+      cortado: p.cortado ? 1 : 0,
+      silkado: p.silkado ? 1 : 0,
+      bordado: p.bordado ? 1 : 0,
+      entregue: p.entregue ? 1 : 0,
+      data_entrega: p.data_entrega ? p.data_entrega.toISOString().split('T')[0] : null,
+      data_cadastro: p.createdAt
     }));
   });
 
@@ -130,16 +142,21 @@ function registerIpcHandlers() {
       throw new Error('Pedido inválido');
     }
 
-    const pedido = await Pedido.findByIdAndUpdate(
-      id,
-      status,
-      { new: true }
-    ).lean();
-
-    return {
-      id: pedido._id.toString(),
-      ...pedido
+    const updateData = {
+      cortado: status.cortado || false,
+      silkado: status.silkado || false,
+      bordado: status.bordado || false,
+      entregue: status.entregue || false
     };
+
+    if (status.data_entrega) {
+      updateData.data_entrega = new Date(status.data_entrega);
+    } else {
+      updateData.data_entrega = null;
+    }
+
+    await Pedido.findByIdAndUpdate(id, updateData);
+    return { success: true };
   });
 
   ipcMain.handle('delete-pedido', async (_, id) => {
@@ -160,11 +177,18 @@ async function createWindow() {
     width: 1200,
     height: 800,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true
     }
   });
 
   await mainWindow.loadFile('index.html');
+  
+  // Abrir DevTools em desenvolvimento
+  if (process.argv.includes('--dev')) {
+    mainWindow.webContents.openDevTools();
+  }
 }
 
 /* ================= APP ================= */

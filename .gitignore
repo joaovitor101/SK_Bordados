@@ -6,3 +6,6 @@ bordados.db-journal
 dist/
 build/
 .env
+.env.local
+.next
+out

@@ -1,6 +1,6 @@
 # SK Bordados - Sistema de Gerenciamento de Pedidos
 
-Sistema desktop desenvolvido com Electron para gerenciamento de pedidos de bordados e estampas.
+Sistema web desenvolvido com Next.js para gerenciamento de pedidos de bordados e estampas. Hospedado na Vercel.
 
 ## Funcionalidades
 
@@ -15,52 +15,107 @@ Sistema desktop desenvolvido com Electron para gerenciamento de pedidos de borda
   - Data de entrega
 - ✅ Busca de pedidos
 - ✅ Banco de dados MongoDB Atlas (nuvem)
+- ✅ Acessível de qualquer lugar via web
 
-## Instalação
+## Instalação Local
 
 1. Instale as dependências:
 ```bash
 npm install
 ```
 
-2. Configure o MongoDB Atlas:
+2. Configure o MongoDB Atlas e variáveis de ambiente:
    - Crie uma conta no [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
    - Crie um cluster gratuito
    - Crie um usuário de banco de dados
    - Adicione seu IP à whitelist (ou use 0.0.0.0/0 para permitir qualquer IP)
    - Copie a string de conexão
-   - Crie um arquivo `.env` na raiz do projeto:
+   - Crie um arquivo `.env.local` na raiz do projeto:
    ```
    MONGODB_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/sk_bordados?retryWrites=true&w=majority
+   ADMIN_PASSWORD=sua_senha_segura_aqui
+   SESSION_SECRET=chave-secreta-aleatoria-mude-isso
    ```
    - Substitua `usuario`, `senha` e `cluster` com suas credenciais reais
+   - **IMPORTANTE**: Defina uma senha forte em `ADMIN_PASSWORD` (esta será a senha de acesso ao sistema)
+   - Gere uma chave aleatória para `SESSION_SECRET` (pode usar: `openssl rand -base64 32`)
 
-3. Execute a aplicação:
-```bash
-npm start
-```
-
-Para desenvolvimento com DevTools:
+3. Execute em desenvolvimento:
 ```bash
 npm run dev
 ```
 
+4. Acesse em: http://localhost:3000
+
+## Deploy na Vercel
+
+### Opção 1: Via GitHub (Recomendado)
+
+1. Crie um repositório no GitHub e faça push do código:
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/seu-usuario/sk-bordados.git
+git push -u origin main
+```
+
+2. Acesse [Vercel](https://vercel.com) e faça login com GitHub
+
+3. Clique em "New Project"
+
+4. Importe seu repositório
+
+5. Configure as variáveis de ambiente:
+   - Em "Environment Variables", adicione:
+   - Name: `MONGODB_URI`, Value: sua string de conexão do MongoDB Atlas
+   - Name: `ADMIN_PASSWORD`, Value: senha de acesso ao sistema (escolha uma senha forte!)
+   - Name: `SESSION_SECRET`, Value: chave secreta aleatória (gere com: `openssl rand -base64 32`)
+
+6. Clique em "Deploy"
+
+7. Pronto! Sua aplicação estará online
+
+### Opção 2: Via CLI da Vercel
+
+1. Instale a CLI da Vercel:
+```bash
+npm i -g vercel
+```
+
+2. Faça login:
+```bash
+vercel login
+```
+
+3. Configure a variável de ambiente:
+```bash
+vercel env add MONGODB_URI
+```
+
+4. Faça o deploy:
+```bash
+vercel
+```
+
 ## Estrutura do Projeto
 
-- `main.js` - Processo principal do Electron e lógica do banco de dados
-- `preload.js` - Bridge de segurança entre renderer e main process
-- `models.js` - Modelos Mongoose (Cliente e Pedido)
-- `index.html` - Interface principal
-- `styles.css` - Estilos da aplicação
-- `renderer.js` - Lógica da interface e comunicação com o backend
-- `.env` - Configuração da conexão MongoDB (não versionado)
+- `app/` - Páginas e rotas do Next.js
+  - `api/` - API Routes (substituem os IPC handlers do Electron)
+  - `page.js` - Página principal
+  - `layout.js` - Layout raiz
+  - `globals.css` - Estilos globais
+- `lib/` - Utilitários
+  - `mongodb.js` - Conexão com MongoDB
+- `models/` - Modelos Mongoose
+  - `Cliente.js` - Modelo de Cliente
+  - `Pedido.js` - Modelo de Pedido
 
 ## Tecnologias
 
-- Electron 28
+- Next.js 14 (React)
 - MongoDB Atlas (Mongoose)
-- HTML/CSS/JavaScript
-- dotenv (variáveis de ambiente)
+- Vercel (Hospedagem)
 
 ## Configuração do MongoDB Atlas
 
@@ -73,13 +128,13 @@ npm run dev
    - Database User Privileges: "Read and write to any database"
 5. Em "Network Access", adicione seu IP:
    - Clique em "Add IP Address"
-   - Para desenvolvimento, use "Allow Access from Anywhere" (0.0.0.0/0)
+   - Para produção, use "Allow Access from Anywhere" (0.0.0.0/0)
 6. Em "Database", clique em "Connect"
 7. Escolha "Connect your application"
 8. Copie a connection string
 9. Substitua `<password>` pela senha do usuário criado
 10. Substitua `<dbname>` por `sk_bordados` (ou o nome que preferir)
-11. Cole no arquivo `.env` como `MONGODB_URI`
+11. Use essa string como `MONGODB_URI` na Vercel
 
 ## Uso
 
@@ -94,12 +149,10 @@ npm run dev
 ## Troubleshooting
 
 ### Erro de conexão com MongoDB
-- Verifique se a string de conexão no `.env` está correta
-- Confirme que o IP está na whitelist do MongoDB Atlas
+- Verifique se a variável `MONGODB_URI` está configurada corretamente na Vercel
+- Confirme que o IP está na whitelist do MongoDB Atlas (use 0.0.0.0/0 para produção)
 - Verifique se o usuário e senha estão corretos
-- Certifique-se de que o cluster está rodando
 
-### Erros no npm install
-- Certifique-se de ter Node.js instalado (versão 16 ou superior)
-- Tente limpar o cache: `npm cache clean --force`
-- Delete `node_modules` e `package-lock.json` e execute `npm install` novamente
+### Erros no build
+- Certifique-se de que todas as dependências estão no `package.json`
+- Verifique os logs de build na Vercel para mais detalhes
