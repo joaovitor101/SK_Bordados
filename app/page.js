@@ -123,18 +123,23 @@ export default function Home() {
 
   const loadPedidos = async () => {
     try {
-      const res = await fetch('/api/pedidos', {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' },
-      });
+      const res = await fetch('/api/pedidos', { cache: 'no-store' });
       const data = await res.json();
+  
+      if (!Array.isArray(data)) {
+        console.error('API /pedidos não retornou array:', data);
+        setPedidos([]); // evita crash
+        return;
+      }
+  
       setPedidos(data);
       setUltimaAtualizacao(new Date());
-    } catch (error) {
-      console.error('Erro ao carregar pedidos:', error);
-      alert('Erro ao carregar pedidos');
+    } catch (err) {
+      console.error('Erro ao carregar pedidos:', err);
+      setPedidos([]);
     }
   };
+  
 
   const handleClienteSubmit = async (e) => {
     e.preventDefault();
