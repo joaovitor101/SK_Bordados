@@ -123,7 +123,7 @@ const CORES_POR_CATEGORIA = {
   ],
   'Outros / Especiais': [
     'Cristal escuro',
-    'Nevia claro',
+    'Nevoa claro',
     'Skol',
     '9121',
     '6690',
@@ -131,7 +131,17 @@ const CORES_POR_CATEGORIA = {
   ],
 };
 
-const CATEGORIAS_CORES = Object.keys(CORES_POR_CATEGORIA);
+// Configuração das categorias com rótulos (incluindo emojis) para exibição
+const CATEGORIAS_CORES = [
+  { id: 'Neutros / Básicos', label: '🔹 Neutros / Básicos' },
+  { id: 'Pretos, cinzas e grafites', label: '⚫ Pretos, cinzas e grafites' },
+  { id: 'Amarelos / Alaranjados', label: '🟡 Amarelos / Alaranjados' },
+  { id: 'Verdes', label: '🟢 Verdes' },
+  { id: 'Azuis', label: '🔵 Azuis' },
+  { id: 'Rosas, lilás e roxos', label: '🌸 Rosas, lilás e roxos' },
+  { id: 'Vermelhos / Vinhos', label: '🔴 Vermelhos / Vinhos' },
+  { id: 'Outros / Especiais', label: '🤍 Outros / Especiais' },
+];
 
 export default function Home() {
   const router = useRouter();
@@ -1085,23 +1095,28 @@ export default function Home() {
 
             <div className="form-row">
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label htmlFor="cor-categoria">Cor</label>
-                <select
-                  id="cor-categoria"
-                  value={corCategoria}
-                  onChange={(e) => {
-                    const categoria = e.target.value;
-                    setCorCategoria(categoria);
-                    setCorSelecionada('');
-                  }}
-                >
-                  <option value="">Selecione o grupo de cores...</option>
-                  {CATEGORIAS_CORES.map((categoria) => (
-                    <option key={categoria} value={categoria}>
-                      {categoria}
-                    </option>
+                <label>Cor</label>
+
+                {/* Botões de categoria de cores */}
+                <div className="color-category-buttons">
+                  {CATEGORIAS_CORES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`color-category-btn ${
+                        corCategoria === cat.id ? 'active' : ''
+                      }`}
+                      onClick={() => {
+                        setCorCategoria((current) =>
+                          current === cat.id ? '' : cat.id
+                        );
+                        setCorSelecionada('');
+                      }}
+                    >
+                      {cat.label}
+                    </button>
                   ))}
-                </select>
+                </div>
 
                 {/* Área de seleção de cor por checkbox */}
                 {!corCategoria && (
@@ -1113,7 +1128,7 @@ export default function Home() {
                       fontStyle: 'italic',
                     }}
                   >
-                    Escolha primeiro um grupo acima para ver as cores disponíveis.
+                    Clique em um grupo acima para ver as cores disponíveis.
                   </div>
                 )}
 
@@ -1124,8 +1139,7 @@ export default function Home() {
                       padding: '12px',
                       border: '1px solid #e0e0e0',
                       borderRadius: '8px',
-                      maxHeight: '260px',
-                      overflowY: 'auto',
+                      maxHeight: '360px',
                       background: '#fafbff',
                       width: '100%',
                     }}
