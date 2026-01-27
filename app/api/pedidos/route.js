@@ -1,5 +1,6 @@
 import connectDB from '@/lib/mongodb';
 import Pedido from '@/models/Pedido';
+import Cliente from '@/models/Cliente'; // garante registro do schema Cliente para o populate
 import mongoose from 'mongoose';
 import { NextResponse } from 'next/server';
 
