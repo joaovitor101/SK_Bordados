@@ -23,6 +23,7 @@ export default function Home() {
   const [selectedClienteId, setSelectedClienteId] = useState('');
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
   const [graficoPeriodo, setGraficoPeriodo] = useState('mes'); // 'semana' ou 'mes'
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Função para remover acentos e normalizar texto
   const removerAcentos = (str) => {
@@ -463,30 +464,34 @@ export default function Home() {
   return (
     <div className="container">
       <header>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="header-top">
           <h1>SK Bordados</h1>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              border: 'none',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              transition: 'all 0.3s',
-            }}
-            onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-            onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-          >
-            Sair
-          </button>
+          <div className="header-actions">
+            <button
+              className="logout-btn"
+              onClick={handleLogout}
+            >
+              Sair
+            </button>
+            <button
+              className="hamburger-btn"
+              type="button"
+              aria-label="Abrir menu"
+              onClick={() => setIsMobileNavOpen((prev) => !prev)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+          </div>
         </div>
-        <nav>
+        <nav className={`main-nav ${isMobileNavOpen ? 'open' : ''}`}>
           <button
             className={`nav-btn ${activePage === 'pedidos' ? 'active' : ''}`}
-            onClick={() => setActivePage('pedidos')}
+            onClick={() => {
+              setActivePage('pedidos');
+              setIsMobileNavOpen(false);
+            }}
             title="Ctrl+P"
           >
             Lista de Pedidos
@@ -497,6 +502,7 @@ export default function Home() {
               setActivePage('novo-pedido');
               setSelectedClienteId('');
               setClienteSearchTerm('');
+              setIsMobileNavOpen(false);
             }}
             title="Ctrl+N"
           >
@@ -504,14 +510,20 @@ export default function Home() {
           </button>
           <button
             className={`nav-btn ${activePage === 'clientes' ? 'active' : ''}`}
-            onClick={() => setActivePage('clientes')}
+            onClick={() => {
+              setActivePage('clientes');
+              setIsMobileNavOpen(false);
+            }}
             title="Ctrl+C"
           >
             Clientes
           </button>
           <button
             className={`nav-btn ${activePage === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActivePage('dashboard')}
+            onClick={() => {
+              setActivePage('dashboard');
+              setIsMobileNavOpen(false);
+            }}
             title="Ctrl+D"
           >
             Dashboard
