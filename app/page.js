@@ -124,19 +124,26 @@ export default function Home() {
   const loadPedidos = async () => {
     try {
       const res = await fetch('/api/pedidos', { cache: 'no-store' });
+
+      if (!res.ok) {
+        // Não limpa a lista em caso de erro para evitar "sumir" com os pedidos
+        console.error('Erro HTTP ao carregar pedidos:', res.status, res.statusText);
+        return;
+      }
+
       const data = await res.json();
   
       if (!Array.isArray(data)) {
         console.error('API /pedidos não retornou array:', data);
-        setPedidos([]); // evita crash
+        // Mantém a lista atual para não dar a impressão de que não há pedidos
         return;
       }
   
       setPedidos(data);
       setUltimaAtualizacao(new Date());
     } catch (err) {
+      // Em falha de rede ou outro erro, mantemos o último estado conhecido
       console.error('Erro ao carregar pedidos:', err);
-      setPedidos([]);
     }
   };
   
