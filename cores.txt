@@ -1,0 +1,229 @@
+🔹 Neutros / Básicos
+
+Branco
+
+Cru
+
+Gelo mescla
+
+Cinza mescla
+
+Cinza 1002
+
+Prata acr
+
+Prata 94275
+
+Areia claro
+
+Palha claro
+
+Bege escola
+
+Bege 33179
+
+Bege médio
+
+Capuccino médio
+
+Café
+
+Marrom 0028
+
+Marrom Sajama
+
+Terra
+
+⚫ Pretos, cinzas e grafites
+
+Preto escuro
+
+Preto mescla
+
+PV – Preto Mescla
+
+Chumbo escuro
+
+Chumbo médio acr 767
+
+Chumbo 40
+
+Chumbo 6690
+
+Chumbo 6631
+
+Chumbo 8260
+
+Chumbo 33177
+
+Ardósia
+
+Noite
+
+Noite 36884
+
+🟡 Amarelos / Alaranjados
+
+Amarelo BB claro
+
+Amarelo ouro médio
+
+Mostarda claro
+
+Canário médio
+
+Carambola médio
+
+Limão médio
+
+Fluorescente escuro
+
+Papaia claro
+
+Pêssego médio
+
+Laranja médio
+
+Coral médio
+
+Coral escuro
+
+Maravilha médio
+
+🟢 Verdes
+
+Verde BB claro
+
+Verde médio
+
+Verde 92894
+
+Verde 8905
+
+Verde 699
+
+Verde folha
+
+Verde chá
+
+Verde oliva
+
+Verde musgo 92894
+
+Verde grama claro
+
+Verde cana médio
+
+Verde mar médio
+
+Verde bandeira escuro
+
+Verde floresta escuro
+
+Verde menta
+
+Verde água (acgua 89737)
+
+Esmeralda médio
+
+Laguna médio
+
+Laguna
+
+Turquesa escuro
+
+Piscina médio
+
+Serena médio
+
+🔵 Azuis
+
+Azul BB claro
+
+Celeste médio
+
+Escola médio
+
+Capri médio
+
+Capri 78
+
+Jeans médio
+
+Cobalto médio
+
+Cobalto
+
+Cobalto 33178
+
+Royal escuro
+
+Royal bic escuro
+
+Petróleo médio
+
+Marinho escuro
+
+Marinho 3091
+
+Marinho 36884
+
+Barcelona
+
+Nuvem 34789
+
+🌸 Rosas, lilás e roxos
+
+Rosa BB claro
+
+Rosa
+
+Rose 36882
+
+Chiclete médio
+
+Pink escuro
+
+Pink 11636
+
+Lilás claro
+
+Lilás 11805
+
+Lavanda médio
+
+Orquídea escuro
+
+Uva escuro
+
+Roxo escuro
+
+🔴 Vermelhos / Vinhos
+
+Vermelho médio
+
+Ferrari vermelho
+
+Rubi escuro
+
+Vinho médio
+
+Vinho 36883
+
+Goiaba médio
+
+Salmão claro
+
+🤍 Outros / Especiais
+
+Cristal escuro
+
+Nevia claro
+
+Skol
+
+9121
+
+6690
+
+36882   

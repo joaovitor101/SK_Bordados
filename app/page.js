@@ -4,6 +4,135 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import './globals.css';
 
+// Paleta de cores disponíveis na loja, organizadas por categoria
+const CORES_POR_CATEGORIA = {
+  'Neutros / Básicos': [
+    'Branco',
+    'Cru',
+    'Gelo mescla',
+    'Cinza mescla',
+    'Cinza 1002',
+    'Prata acr',
+    'Prata 94275',
+    'Areia claro',
+    'Palha claro',
+    'Bege escola',
+    'Bege 33179',
+    'Bege médio',
+    'Capuccino médio',
+    'Café',
+    'Marrom 0028',
+    'Marrom Sajama',
+    'Terra',
+  ],
+  'Pretos, cinzas e grafites': [
+    'Preto escuro',
+    'Preto mescla',
+    'PV – Preto Mescla',
+    'Chumbo escuro',
+    'Chumbo médio acr 767',
+    'Chumbo 40',
+    'Chumbo 6690',
+    'Chumbo 6631',
+    'Chumbo 8260',
+    'Chumbo 33177',
+    'Ardósia',
+    'Noite',
+    'Noite 36884',
+  ],
+  'Amarelos / Alaranjados': [
+    'Amarelo BB claro',
+    'Amarelo ouro médio',
+    'Mostarda claro',
+    'Canário médio',
+    'Carambola médio',
+    'Limão médio',
+    'Fluorescente escuro',
+    'Papaia claro',
+    'Pêssego médio',
+    'Laranja médio',
+    'Coral médio',
+    'Coral escuro',
+    'Maravilha médio',
+  ],
+  Verdes: [
+    'Verde BB claro',
+    'Verde médio',
+    'Verde 92894',
+    'Verde 8905',
+    'Verde 699',
+    'Verde folha',
+    'Verde chá',
+    'Verde oliva',
+    'Verde musgo 92894',
+    'Verde grama claro',
+    'Verde cana médio',
+    'Verde mar médio',
+    'Verde bandeira escuro',
+    'Verde floresta escuro',
+    'Verde menta',
+    'Verde água (acgua 89737)',
+    'Esmeralda médio',
+    'Laguna médio',
+    'Laguna',
+    'Turquesa escuro',
+    'Piscina médio',
+    'Serena médio',
+  ],
+  Azuis: [
+    'Azul BB claro',
+    'Celeste médio',
+    'Escola médio',
+    'Capri médio',
+    'Capri 78',
+    'Jeans médio',
+    'Cobalto médio',
+    'Cobalto',
+    'Cobalto 33178',
+    'Royal escuro',
+    'Royal bic escuro',
+    'Petróleo médio',
+    'Marinho escuro',
+    'Marinho 3091',
+    'Marinho 36884',
+    'Barcelona',
+    'Nuvem 34789',
+  ],
+  'Rosas, lilás e roxos': [
+    'Rosa BB claro',
+    'Rosa',
+    'Rose 36882',
+    'Chiclete médio',
+    'Pink escuro',
+    'Pink 11636',
+    'Lilás claro',
+    'Lilás 11805',
+    'Lavanda médio',
+    'Orquídea escuro',
+    'Uva escuro',
+    'Roxo escuro',
+  ],
+  'Vermelhos / Vinhos': [
+    'Vermelho médio',
+    'Ferrari vermelho',
+    'Rubi escuro',
+    'Vinho médio',
+    'Vinho 36883',
+    'Goiaba médio',
+    'Salmão claro',
+  ],
+  'Outros / Especiais': [
+    'Cristal escuro',
+    'Nevia claro',
+    'Skol',
+    '9121',
+    '6690',
+    '36882',
+  ],
+};
+
+const CATEGORIAS_CORES = Object.keys(CORES_POR_CATEGORIA);
+
 export default function Home() {
   const router = useRouter();
   const [activePage, setActivePage] = useState('pedidos');
@@ -24,6 +153,8 @@ export default function Home() {
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
   const [graficoPeriodo, setGraficoPeriodo] = useState('mes'); // 'semana' ou 'mes'
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [corCategoria, setCorCategoria] = useState('');
+  const [corSelecionada, setCorSelecionada] = useState('');
 
   // Função para remover acentos e normalizar texto
   const removerAcentos = (str) => {
@@ -220,7 +351,7 @@ export default function Home() {
     const pedido = {
       cliente_id: selectedClienteId,
       descricao: formData.get('descricao'),
-      cor: formData.get('cor') || null,
+      cor: corSelecionada || null,
       tecido: formData.get('tecido') || null,
       tamanho: formData.get('tamanho') || null,
       observacao: formData.get('observacao') || null
@@ -236,6 +367,8 @@ export default function Home() {
         e.target.reset();
         setSelectedClienteId('');
         setClienteSearchTerm('');
+        setCorCategoria('');
+        setCorSelecionada('');
         setActivePage('pedidos');
         loadPedidos();
       }
@@ -951,9 +1084,94 @@ export default function Home() {
             </div>
 
             <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="cor">Cor</label>
-                <input type="text" id="cor" name="cor" placeholder="Ex: Azul" />
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label htmlFor="cor-categoria">Cor</label>
+                <select
+                  id="cor-categoria"
+                  value={corCategoria}
+                  onChange={(e) => {
+                    const categoria = e.target.value;
+                    setCorCategoria(categoria);
+                    setCorSelecionada('');
+                  }}
+                >
+                  <option value="">Selecione o grupo de cores...</option>
+                  {CATEGORIAS_CORES.map((categoria) => (
+                    <option key={categoria} value={categoria}>
+                      {categoria}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Área de seleção de cor por checkbox */}
+                {!corCategoria && (
+                  <div
+                    style={{
+                      marginTop: '8px',
+                      fontSize: '12px',
+                      color: '#777',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    Escolha primeiro um grupo acima para ver as cores disponíveis.
+                  </div>
+                )}
+
+                {corCategoria && (
+                  <div
+                    style={{
+                      marginTop: '10px',
+                      padding: '12px',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      maxHeight: '260px',
+                      overflowY: 'auto',
+                      background: '#fafbff',
+                      width: '100%',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#555',
+                        marginBottom: '8px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Selecione a cor desejada ({corCategoria}):
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '6px',
+                      }}
+                    >
+                      {CORES_POR_CATEGORIA[corCategoria].map((cor) => {
+                        const checked = corSelecionada === cor;
+                        return (
+                          <label
+                            key={cor}
+                            className={`color-checkbox ${checked ? 'checked' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                setCorSelecionada((current) =>
+                                  current === cor ? '' : cor
+                                )
+                              }
+                            />
+                            <span>{cor}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {/* Mantém valor no form para compatibilidade */}
+                    <input type="hidden" name="cor" value={corSelecionada} />
+                  </div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="tecido">Tecido</label>
@@ -986,6 +1204,8 @@ export default function Home() {
                   setActivePage('pedidos');
                   setSelectedClienteId('');
                   setClienteSearchTerm('');
+                  setCorCategoria('');
+                  setCorSelecionada('');
                 }}
               >
                 Cancelar
