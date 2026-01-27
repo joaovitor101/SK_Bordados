@@ -31,6 +31,23 @@ export default function Home() {
       .toLowerCase();
   };
 
+  // Função para formatar data (YYYY-MM-DD) para dd/mm/aaaa sem problema de fuso
+  const formatarDataLocal = (dataStr) => {
+    if (!dataStr) return '';
+    if (dataStr.includes('/')) return dataStr;
+    const [ano, mes, dia] = dataStr.split('-');
+    if (!ano || !mes || !dia) return dataStr;
+    return `${dia}/${mes}/${ano}`;
+  };
+
+  // Função para criar Date a partir de YYYY-MM-DD sem mudar de dia por causa do fuso
+  const parseDataEntrega = (dataStr) => {
+    if (!dataStr) return null;
+    const [ano, mes, dia] = dataStr.split('-').map(Number);
+    if (!ano || !mes || !dia) return null;
+    return new Date(ano, mes - 1, dia);
+  };
+
   useEffect(() => {
     loadClientes();
     loadPedidos();
@@ -249,13 +266,15 @@ export default function Home() {
 
     const pedidosMes = pedidosEntregues.filter(p => {
       if (!p.data_entrega) return false;
-      const dataEntrega = new Date(p.data_entrega);
+      const dataEntrega = parseDataEntrega(p.data_entrega);
+      if (!dataEntrega) return false;
       return dataEntrega >= inicioMes;
     });
 
     const pedidosSemana = pedidosEntregues.filter(p => {
       if (!p.data_entrega) return false;
-      const dataEntrega = new Date(p.data_entrega);
+      const dataEntrega = parseDataEntrega(p.data_entrega);
+      if (!dataEntrega) return false;
       return dataEntrega >= inicioSemana;
     });
 
@@ -299,7 +318,8 @@ export default function Home() {
         fimSemana.setHours(23, 59, 59, 999);
         
         const pedidosSemana = pedidosEntregues.filter(p => {
-          const dataEntrega = new Date(p.data_entrega);
+          const dataEntrega = parseDataEntrega(p.data_entrega);
+          if (!dataEntrega) return false;
           return dataEntrega >= inicioSemana && dataEntrega <= fimSemana;
         });
         
@@ -323,7 +343,8 @@ export default function Home() {
         const proximoMes = new Date(agora.getFullYear(), agora.getMonth() - i + 1, 1);
         
         const pedidosMes = pedidosEntregues.filter(p => {
-          const dataEntrega = new Date(p.data_entrega);
+          const dataEntrega = parseDataEntrega(p.data_entrega);
+          if (!dataEntrega) return false;
           return dataEntrega >= dataMes && dataEntrega < proximoMes;
         });
         
@@ -702,7 +723,7 @@ export default function Home() {
                       </td>
                       <td>
                         {pedido.data_entrega
-                          ? new Date(pedido.data_entrega).toLocaleDateString('pt-BR')
+                          ? formatarDataLocal(pedido.data_entrega)
                           : '-'}
                       </td>
                       <td className="observacao-cell">
