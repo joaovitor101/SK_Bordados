@@ -7,6 +7,12 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     await connectDB();
+    // Usa explicitamente o modelo Cliente para evitar tree-shaking/remoção do import
+    // Isso garante que o schema "Cliente" esteja registrado no Mongoose antes do populate
+    if (!mongoose.models.Cliente && Cliente) {
+      // Força o registro caso algo inesperado aconteça
+      mongoose.model('Cliente', Cliente.schema);
+    }
     
     const pedidos = await Pedido.find()
       .populate('cliente_id', 'nome empresa')
