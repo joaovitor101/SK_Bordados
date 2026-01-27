@@ -9,6 +9,8 @@ export default function Home() {
   const [activePage, setActivePage] = useState('pedidos');
   const [clientes, setClientes] = useState([]);
   const [pedidos, setPedidos] = useState([]);
+  const [pedidosLoaded, setPedidosLoaded] = useState(false);
+  const [pedidosError, setPedidosError] = useState(null);
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [editingCliente, setEditingCliente] = useState(null);
@@ -145,6 +147,7 @@ export default function Home() {
       if (!res.ok) {
         // Não limpa a lista em caso de erro para evitar "sumir" com os pedidos
         console.error('Erro HTTP ao carregar pedidos:', res.status, res.statusText);
+        setPedidosError(`Erro ao carregar pedidos (${res.status})`);
         return;
       }
 
@@ -153,14 +156,18 @@ export default function Home() {
       if (!Array.isArray(data)) {
         console.error('API /pedidos não retornou array:', data);
         // Mantém a lista atual para não dar a impressão de que não há pedidos
+        setPedidosError('Resposta inesperada ao carregar pedidos');
         return;
       }
   
       setPedidos(data);
       setUltimaAtualizacao(new Date());
+      setPedidosLoaded(true);
+      setPedidosError(null);
     } catch (err) {
       // Em falha de rede ou outro erro, mantemos o último estado conhecido
       console.error('Erro ao carregar pedidos:', err);
+      setPedidosError('Erro de rede ao carregar pedidos');
     }
   };
   
@@ -686,13 +693,32 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPedidos.length === 0 ? (
+                {/* Estado de erro na carga de pedidos */}
+                {pedidosError && (
+                  <tr>
+                    <td colSpan="13" style={{ textAlign: 'center', color: '#dc3545' }}>
+                      {pedidosLoaded ? 'Erro ao atualizar pedidos. Tentando novamente...' : 'Erro ao carregar pedidos. Verifique a conexão ou tente recarregar.'}
+                    </td>
+                  </tr>
+                )}
+                {/* Carregando primeira vez */}
+                {!pedidosError && !pedidosLoaded && (
+                  <tr>
+                    <td colSpan="13" style={{ textAlign: 'center', color: '#666' }}>
+                      Carregando pedidos...
+                    </td>
+                  </tr>
+                )}
+                {/* Lista vazia somente quando realmente não há pedidos */}
+                {!pedidosError && pedidosLoaded && filteredPedidos.length === 0 && (
                   <tr>
                     <td colSpan="13" style={{ textAlign: 'center' }}>
                       Nenhum pedido cadastrado
                     </td>
                   </tr>
-                ) : (
+                )}
+                {/* Lista de pedidos */}
+                {!pedidosError && filteredPedidos.length > 0 && (
                   filteredPedidos.map((pedido) => (
                     <tr key={pedido.id}>
                       <td>{pedido.cliente_nome}</td>
