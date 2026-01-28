@@ -265,10 +265,13 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [activePage]);
 
-  // Auto-refresh da lista de pedidos (a cada 5s)
+  // Auto-refresh da lista de pedidos (a cada 4s)
   useEffect(() => {
     if (activePage !== 'pedidos') return;
     if (showClienteModal || showStatusModal) return;
+    // Não atualizar automaticamente enquanto o usuário estiver fazendo seleção em massa,
+    // para não "quebrar" os checkboxes de seleção/estatus
+    if (selectedPedidoIds.length > 0) return;
 
     const tick = () => {
       // Evita gastar rede em aba escondida (e evita a sensação de "não atualiza")
@@ -302,6 +305,29 @@ export default function Home() {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   const hojeStr = hoje.toISOString().split('T')[0];
+
+  // Quando o usuário seleciona pedidos, já marca os status que TODOS eles têm como "ligados"
+  useEffect(() => {
+    if (!selectedPedidoIds.length) {
+      setBulkStatus({
+        cortado: false,
+        silkado: false,
+        bordado: false,
+        entregue: false,
+      });
+      return;
+    }
+
+    const selecionados = pedidos.filter((p) => selectedPedidoIds.includes(p.id));
+    if (!selecionados.length) return;
+
+    setBulkStatus((prev) => ({
+      cortado: selecionados.every((p) => !!p.cortado),
+      silkado: selecionados.every((p) => !!p.silkado),
+      bordado: selecionados.every((p) => !!p.bordado),
+      entregue: selecionados.every((p) => !!p.entregue),
+    }));
+  }, [selectedPedidoIds]);
 
   const loadClientes = async () => {
     try {
@@ -421,10 +447,14 @@ export default function Home() {
     };
 
     try {
-      const res = await fetch('/api/clientes', {
-        method: 'POST',
+      const isEditing = !!editingCliente;
+      const url = isEditing ? `/api/clientes/${editingCliente.id}` : '/api/clientes';
+      const method = isEditing ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cliente)
+        body: JSON.stringify(cliente),
       });
       if (res.ok) {
         setShowClienteModal(false);
