@@ -111,6 +111,7 @@ const CORES_POR_CATEGORIA = {
     'Orquídea escuro',
     'Uva escuro',
     'Roxo escuro',
+    'Salmão claro',
   ],
   'Vermelhos / Vinhos': [
     'Vermelho médio',
@@ -119,7 +120,6 @@ const CORES_POR_CATEGORIA = {
     'Vinho médio',
     'Vinho 36883',
     'Goiaba médio',
-    'Salmão claro',
   ],
   'Outros / Especiais': [
     'Cristal escuro',
