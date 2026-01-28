@@ -185,6 +185,17 @@ export default function Home() {
     bordado: false,
     entregue: false,
   });
+  const [alertModal, setAlertModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+  });
+  const [confirmModal, setConfirmModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+  });
 
   // Função para remover acentos e normalizar texto
   const removerAcentos = (str) => {
@@ -302,7 +313,11 @@ export default function Home() {
       setClientes(data);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
-      alert('Erro ao carregar clientes');
+      setAlertModal({
+        open: true,
+        title: 'Erro',
+        message: 'Erro ao carregar clientes.',
+      });
     }
   };
 
@@ -340,11 +355,19 @@ export default function Home() {
   const handleBulkStatusApply = async (e) => {
     e?.preventDefault?.();
     if (!selectedPedidoIds.length) {
-      alert('Selecione pelo menos um pedido.');
+      setAlertModal({
+        open: true,
+        title: 'Aviso',
+        message: 'Selecione pelo menos um pedido.',
+      });
       return;
     }
     if (!bulkStatus.cortado && !bulkStatus.silkado && !bulkStatus.bordado && !bulkStatus.entregue) {
-      alert('Selecione pelo menos um status para aplicar.');
+      setAlertModal({
+        open: true,
+        title: 'Aviso',
+        message: 'Selecione pelo menos um status para aplicar.',
+      });
       return;
     }
 
@@ -378,7 +401,11 @@ export default function Home() {
       loadPedidos();
     } catch (err) {
       console.error('Erro ao aplicar status em massa:', err);
-      alert('Erro ao aplicar status em massa.');
+      setAlertModal({
+        open: true,
+        title: 'Erro',
+        message: 'Erro ao aplicar status em massa.',
+      });
     }
   };
 
@@ -409,7 +436,11 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
-      alert('Erro ao salvar cliente');
+      setAlertModal({
+        open: true,
+        title: 'Erro',
+        message: 'Erro ao salvar cliente.',
+      });
     }
   };
 
@@ -420,7 +451,11 @@ export default function Home() {
       if (clienteSearchTerm && filteredClientes.length === 1) {
         setSelectedClienteId(filteredClientes[0].id);
       } else {
-        alert('Selecione um cliente');
+        setAlertModal({
+          open: true,
+          title: 'Aviso',
+          message: 'Selecione um cliente.',
+        });
         return;
       }
     }
@@ -452,7 +487,11 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Erro ao criar pedido:', error);
-      alert('Erro ao criar pedido');
+      setAlertModal({
+        open: true,
+        title: 'Erro',
+        message: 'Erro ao criar pedido.',
+      });
     }
   };
 
@@ -593,7 +632,11 @@ export default function Home() {
       const dataSelecionada = new Date(dataEntregaValue);
       dataSelecionada.setHours(0, 0, 0, 0);
       if (dataSelecionada < hoje) {
-        alert('A data de entrega não pode ser anterior a hoje.');
+        setAlertModal({
+          open: true,
+          title: 'Aviso',
+          message: 'A data de entrega não pode ser anterior a hoje.',
+        });
         return;
       }
     }
@@ -619,24 +662,43 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status');
+      setAlertModal({
+        open: true,
+        title: 'Erro',
+        message: 'Erro ao atualizar status.',
+      });
     }
   };
 
   const handleDeletePedido = async (id) => {
-    if (!confirm('Tem certeza que deseja excluir este pedido?')) return;
-
-    try {
-      const res = await fetch(`/api/pedidos/${id}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        loadPedidos();
-      }
-    } catch (error) {
-      console.error('Erro ao excluir pedido:', error);
-      alert('Erro ao excluir pedido');
-    }
+    setConfirmModal({
+      open: true,
+      title: 'Excluir pedido',
+      message: 'Tem certeza que deseja excluir este pedido?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/pedidos/${id}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            loadPedidos();
+          } else {
+            setAlertModal({
+              open: true,
+              title: 'Erro',
+              message: 'Erro ao excluir pedido.',
+            });
+          }
+        } catch (error) {
+          console.error('Erro ao excluir pedido:', error);
+          setAlertModal({
+            open: true,
+            title: 'Erro',
+            message: 'Erro ao excluir pedido.',
+          });
+        }
+      },
+    });
   };
 
   const handleLogout = async () => {
@@ -1509,7 +1571,7 @@ export default function Home() {
                   <th>Empresa</th>
                   <th>Telefone</th>
                   <th>Email</th>
-                  <th>Ações</th>
+                  <th colSpan="2">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -1535,7 +1597,45 @@ export default function Home() {
                           }}
                         >
                           Editar
-                          
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-danger"
+                          onClick={() => {
+                            setConfirmModal({
+                              open: true,
+                              title: 'Excluir cliente',
+                              message:
+                                'Tem certeza que deseja excluir este cliente? Clientes com pedidos cadastrados não podem ser excluídos.',
+                              onConfirm: async () => {
+                                try {
+                                  const res = await fetch(`/api/clientes/${cliente.id}`, {
+                                    method: 'DELETE',
+                                  });
+                                  if (res.ok) {
+                                    await loadClientes();
+                                  } else {
+                                    const data = await res.json().catch(() => ({}));
+                                    setAlertModal({
+                                      open: true,
+                                      title: 'Erro',
+                                      message: data?.error || 'Erro ao excluir cliente.',
+                                    });
+                                  }
+                                } catch (err) {
+                                  console.error('Erro ao excluir cliente:', err);
+                                  setAlertModal({
+                                    open: true,
+                                    title: 'Erro',
+                                    message: 'Erro ao excluir cliente.',
+                                  });
+                                }
+                              },
+                            });
+                          }}
+                        >
+                          Excluir
                         </button>
                       </td>
                     </tr>
@@ -1634,6 +1734,85 @@ export default function Home() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal genérico de aviso */}
+      {alertModal.open && (
+        <div
+          className="modal active"
+          onClick={(e) => {
+            if (e.target.className === 'modal active') {
+              setAlertModal({ open: false, title: '', message: '' });
+            }
+          }}
+        >
+          <div className="modal-content">
+            <span
+              className="close"
+              onClick={() => setAlertModal({ open: false, title: '', message: '' })}
+            >
+              &times;
+            </span>
+            {alertModal.title && <h2>{alertModal.title}</h2>}
+            <p>{alertModal.message}</p>
+            <div className="form-actions" style={{ marginTop: '20px' }}>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setAlertModal({ open: false, title: '', message: '' })}
+              >
+                Ok
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal genérico de confirmação */}
+      {confirmModal.open && (
+        <div
+          className="modal active"
+          onClick={(e) => {
+            if (e.target.className === 'modal active') {
+              setConfirmModal({ open: false, title: '', message: '', onConfirm: null });
+            }
+          }}
+        >
+          <div className="modal-content">
+            <span
+              className="close"
+              onClick={() => setConfirmModal({ open: false, title: '', message: '', onConfirm: null })}
+            >
+              &times;
+            </span>
+            {confirmModal.title && <h2>{confirmModal.title}</h2>}
+            <p>{confirmModal.message}</p>
+            <div className="form-actions" style={{ marginTop: '20px' }}>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  const fn = confirmModal.onConfirm;
+                  setConfirmModal({ open: false, title: '', message: '', onConfirm: null });
+                  if (typeof fn === 'function') {
+                    await fn();
+                  }
+                }}
+              >
+                Confirmar
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() =>
+                  setConfirmModal({ open: false, title: '', message: '', onConfirm: null })
+                }
+              >
+                Cancelar
+              </button>
+            </div>
           </div>
         </div>
       )}
