@@ -143,6 +143,19 @@ const CATEGORIAS_CORES = [
   { id: 'Outros / Especiais', label: '🤍 Outros / Especiais' },
 ];
 
+// Formata telefone brasileiro para (xx) xxxxx-xxxx
+const formatPhone = (value) => {
+  if (!value) return '';
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length < 2) return digits;
+  const part1 = digits.slice(0, 2);
+  const part2 = digits.slice(2, 7);
+  const part3 = digits.slice(7, 11);
+  if (!part2) return `(${part1}`;
+  if (!part3) return `(${part1}) ${part2}`;
+  return `(${part1}) ${part2}-${part3}`;
+};
+
 export default function Home() {
   const router = useRouter();
   const [activePage, setActivePage] = useState('pedidos');
@@ -165,6 +178,13 @@ export default function Home() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [corCategoria, setCorCategoria] = useState('');
   const [corSelecionada, setCorSelecionada] = useState('');
+  const [selectedPedidoIds, setSelectedPedidoIds] = useState([]);
+  const [bulkStatus, setBulkStatus] = useState({
+    cortado: false,
+    silkado: false,
+    bordado: false,
+    entregue: false,
+  });
 
   // Função para remover acentos e normalizar texto
   const removerAcentos = (str) => {
@@ -268,6 +288,10 @@ export default function Home() {
     };
   }, [activePage]);
 
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const hojeStr = hoje.toISOString().split('T')[0];
+
   const loadClientes = async () => {
     try {
       const res = await fetch('/api/clientes', {
@@ -313,6 +337,50 @@ export default function Home() {
     }
   };
   
+  const handleBulkStatusApply = async (e) => {
+    e?.preventDefault?.();
+    if (!selectedPedidoIds.length) {
+      alert('Selecione pelo menos um pedido.');
+      return;
+    }
+    if (!bulkStatus.cortado && !bulkStatus.silkado && !bulkStatus.bordado && !bulkStatus.entregue) {
+      alert('Selecione pelo menos um status para aplicar.');
+      return;
+    }
+
+    const pedidosMap = pedidos.reduce((acc, p) => {
+      acc[p.id] = p;
+      return acc;
+    }, {});
+
+    try {
+      await Promise.all(
+        selectedPedidoIds.map(async (id) => {
+          const p = pedidosMap[id];
+          if (!p) return;
+          const body = {
+            cortado: bulkStatus.cortado ? true : !!p.cortado,
+            silkado: bulkStatus.silkado ? true : !!p.silkado,
+            bordado: bulkStatus.bordado ? true : !!p.bordado,
+            entregue: bulkStatus.entregue ? true : !!p.entregue,
+            data_entrega: p.data_entrega || null,
+            observacao: p.observacao ?? null,
+          };
+          await fetch(`/api/pedidos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+        })
+      );
+      setBulkStatus({ cortado: false, silkado: false, bordado: false, entregue: false });
+      setSelectedPedidoIds([]);
+      loadPedidos();
+    } catch (err) {
+      console.error('Erro ao aplicar status em massa:', err);
+      alert('Erro ao aplicar status em massa.');
+    }
+  };
 
   const handleClienteSubmit = async (e) => {
     e.preventDefault();
@@ -320,7 +388,7 @@ export default function Home() {
     const cliente = {
       nome: formData.get('nome'),
       empresa: formData.get('empresa') || null,
-      telefone: formData.get('telefone') || null,
+      telefone: formatPhone(formData.get('telefone') || ''),
       email: formData.get('email') || null,
       endereco: formData.get('endereco') || null
     };
@@ -519,12 +587,22 @@ export default function Home() {
     const formData = new FormData(e.target);
     const obsRaw = formData.get('observacao');
     const observacao = typeof obsRaw === 'string' ? obsRaw.trim() : '';
+    const dataEntregaValue = formData.get('data_entrega');
+
+    if (dataEntregaValue) {
+      const dataSelecionada = new Date(dataEntregaValue);
+      dataSelecionada.setHours(0, 0, 0, 0);
+      if (dataSelecionada < hoje) {
+        alert('A data de entrega não pode ser anterior a hoje.');
+        return;
+      }
+    }
     const status = {
       cortado: formData.get('cortado') === 'on',
       silkado: formData.get('silkado') === 'on',
       bordado: formData.get('bordado') === 'on',
       entregue: formData.get('entregue') === 'on',
-      data_entrega: formData.get('data_entrega') || null,
+      data_entrega: dataEntregaValue || null,
       observacao: observacao ? observacao : null
     };
 
@@ -828,10 +906,101 @@ export default function Home() {
               </span>
             </div>
           )}
+          {/* Ações em massa para pedidos selecionados */}
+          {selectedPedidoIds.length > 0 && (
+            <div
+              style={{
+                marginBottom: '10px',
+                padding: '10px 12px',
+                background: '#e7f3ff',
+                borderRadius: '6px',
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '13px',
+              }}
+            >
+              <span>
+                {selectedPedidoIds.length}{' '}
+                {selectedPedidoIds.length === 1 ? 'pedido selecionado' : 'pedidos selecionados'}
+              </span>
+              <span style={{ marginLeft: '8px', fontWeight: 600 }}>Marcar como:</span>
+              <label className="color-checkbox" style={{ padding: '4px 8px' }}>
+                <input
+                  type="checkbox"
+                  checked={bulkStatus.cortado}
+                  onChange={(e) => setBulkStatus((s) => ({ ...s, cortado: e.target.checked }))}
+                />
+                <span>Cortado</span>
+              </label>
+              <label className="color-checkbox" style={{ padding: '4px 8px' }}>
+                <input
+                  type="checkbox"
+                  checked={bulkStatus.silkado}
+                  onChange={(e) => setBulkStatus((s) => ({ ...s, silkado: e.target.checked }))}
+                />
+                <span>Silkado</span>
+              </label>
+              <label className="color-checkbox" style={{ padding: '4px 8px' }}>
+                <input
+                  type="checkbox"
+                  checked={bulkStatus.bordado}
+                  onChange={(e) => setBulkStatus((s) => ({ ...s, bordado: e.target.checked }))}
+                />
+                <span>Bordado</span>
+              </label>
+              <label className="color-checkbox" style={{ padding: '4px 8px' }}>
+                <input
+                  type="checkbox"
+                  checked={bulkStatus.entregue}
+                  onChange={(e) => setBulkStatus((s) => ({ ...s, entregue: e.target.checked }))}
+                />
+                <span>Entregue</span>
+              </label>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: '6px 12px', fontSize: '12px' }}
+                onClick={handleBulkStatusApply}
+              >
+                Aplicar
+              </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: '6px 12px', fontSize: '12px' }}
+                onClick={() => {
+                  setSelectedPedidoIds([]);
+                  setBulkStatus({ cortado: false, silkado: false, bordado: false, entregue: false });
+                }}
+              >
+                Limpar seleção
+              </button>
+            </div>
+          )}
+
           <div className="table-container">
             <table>
               <thead>
                 <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredPedidos.length > 0 &&
+                        filteredPedidos.every((p) => selectedPedidoIds.includes(p.id))
+                      }
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          const ids = filteredPedidos.map((p) => p.id);
+                          setSelectedPedidoIds(ids);
+                        } else {
+                          setSelectedPedidoIds([]);
+                        }
+                      }}
+                    />
+                  </th>
                   <th>Cliente</th>
                   <th>Empresa</th>
                   <th>Descrição</th>
@@ -876,6 +1045,21 @@ export default function Home() {
                 {!pedidosError && filteredPedidos.length > 0 && (
                   filteredPedidos.map((pedido) => (
                     <tr key={pedido.id}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedPedidoIds.includes(pedido.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedPedidoIds((ids) =>
+                                ids.includes(pedido.id) ? ids : [...ids, pedido.id]
+                              );
+                            } else {
+                              setSelectedPedidoIds((ids) => ids.filter((id) => id !== pedido.id));
+                            }
+                          }}
+                        />
+                      </td>
                       <td>{pedido.cliente_nome}</td>
                       <td>{pedido.cliente_empresa || '-'}</td>
                       <td>{pedido.descricao}</td>
@@ -1133,17 +1317,7 @@ export default function Home() {
                 )}
 
                 {corCategoria && (
-                  <div
-                    style={{
-                      marginTop: '10px',
-                      padding: '12px',
-                      border: '1px solid #e0e0e0',
-                      borderRadius: '8px',
-                      maxHeight: '360px',
-                      background: '#fafbff',
-                      width: '100%',
-                    }}
-                  >
+                  <div className="color-choices-panel">
                     <div
                       style={{
                         fontSize: '12px',
@@ -1154,13 +1328,7 @@ export default function Home() {
                     >
                       Selecione a cor desejada ({corCategoria}):
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '6px',
-                      }}
-                    >
+                    <div className="color-options-grid">
                       {CORES_POR_CATEGORIA[corCategoria].map((cor) => {
                         const checked = corSelecionada === cor;
                         return (
@@ -1367,6 +1535,7 @@ export default function Home() {
                           }}
                         >
                           Editar
+                          
                         </button>
                       </td>
                     </tr>
@@ -1424,6 +1593,11 @@ export default function Home() {
                   id="cliente-telefone"
                   name="telefone"
                   defaultValue={editingCliente?.telefone || ''}
+                  placeholder="(41) 99999-9999"
+                  inputMode="tel"
+                  onBlur={(e) => {
+                    e.target.value = formatPhone(e.target.value);
+                  }}
                 />
               </div>
               <div className="form-group">
@@ -1524,6 +1698,7 @@ export default function Home() {
                   type="date"
                   id="status-data-entrega"
                   name="data_entrega"
+                  min={hojeStr}
                   defaultValue={
                     editingPedido.data_entrega
                       ? editingPedido.data_entrega.split('T')[0]
